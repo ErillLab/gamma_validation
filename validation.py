@@ -1,6 +1,11 @@
 import os
+import sys
+sys.path.append(
+    os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
+from gpu_pssm import gpu_pssm
 import numpy as np
 import math
+from numbapro import cuda
 
 bases = "ACGT"
 
@@ -40,7 +45,10 @@ def main():
     
     # Score sites
     for n, site in enumerate(sites):
-        print score_site(site, _pssm), int2nt(site), strands[n], found[n]
+        print "True:", score_site(site, _pssm), int2nt(site), strands[n], found[n]
+        print "CPU: ", cpu_score_site(site, _pssm), int2nt(site), strands[n], found[n]
+        print "GPU: ", gpu_score_site(site, _pssm), int2nt(site), strands[n], found[n]
+        print
 
     # motif_seqs = load_fasta(motif_filename)
     # pscm = count_matrix([nt2int(seq) for seq in motif_seqs])
@@ -71,6 +79,16 @@ def freq_matrix(pscm):
 
 def score_site(site, pssm):
     return sum([pssm[i * 4 + j] for i, j in enumerate(site)])
+
+
+def gpu_score_site(site, pssm):
+    scores = gpu_pssm.score_sequence(site, pssm)
+    return scores[0][0]
+
+
+def cpu_score_site(site, pssm):
+    scores = gpu_pssm.score_sequence_with_cpu(site, pssm)
+    return scores[0][0]
 
 
 def sliding_window(a, size):
