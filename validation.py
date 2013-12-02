@@ -19,7 +19,7 @@ def main():
     # Load genome (validated)
     genome, __ = load_scaffolds(genome_filename)
     _genome, __ = metagenomics.load_scaffolds(genome_filename)
-    print "Genomes loaded equally:", np.array_equal(genome, _genome)
+    print "Genomes loaded are the same:", np.array_equal(genome, _genome)
     print
 
     # Ensure the sites are in the genome (validated)
@@ -36,7 +36,7 @@ def main():
             if match.size > 0 and match[0] not in positions:
                 pos = match[0]
                 seq = genome[pos:pos + 20]
-                print int2nt(seq), "->", match[0] 
+                print "Found:", int2nt(seq), "->", match[0] 
                 positions.append(pos)
                 sites.append(seq)
                 strands.append(0) # forward
@@ -46,7 +46,7 @@ def main():
             if match.size > 0 and match[0] not in positions:
                 pos = match[0]
                 seq = wc(genome[match[0]:match[0] + 20])
-                print int2nt(seq), "<-", match[0]
+                print "Found:", int2nt(seq), "<-", match[0]
                 positions.append(pos)
                 sites.append(seq)
                 strands.append(1) # reverse
@@ -56,11 +56,11 @@ def main():
     genome_frequencies = np.bincount(genome).astype(np.float) / genome.size
     _pssm = create_pssm(motif_filename, genome_frequencies=genome_frequencies)
     _pssm2 = gpu_pssm.create_pssm(motif_filename, genome_frequencies=genome_frequencies)
-    print "PSSMs created equally:", np.array_equal(_pssm, _pssm2)
+    print "PSSMs are the same:", np.array_equal(_pssm, _pssm2)
     print
     
     # Score sites (validated!!)
-    print "Scoring sites:"
+    print "Scoring sites (method score seq strand pos):"
     for n, site in enumerate(sites):
         print "True:", score_site(site, _pssm), int2nt(site), strands[n], positions[n]
         print "CPU: ", cpu_score_site(site, _pssm), int2nt(site), strands[n], positions[n]
