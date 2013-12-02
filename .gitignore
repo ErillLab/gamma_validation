@@ -1,0 +1,8 @@
+# Ignore all subdirectories
+/*/
+
+# Ignore compiled python files
+*.py[cod]
+
+# Ignore Excel autosaves
+~$*.xlsx

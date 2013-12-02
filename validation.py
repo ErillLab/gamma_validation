@@ -3,9 +3,9 @@ import sys
 sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
 from gpu_pssm import gpu_pssm
+from mg_perm_analysis import metagenomics
 import numpy as np
 import math
-from numbapro import cuda
 
 bases = "ACGT"
 
@@ -13,41 +13,58 @@ def main():
     motif_filename = "Gamma_collection.txt"
     genome_filename = "NC_000913.fna" # Escherichia coli str. K-12 substr. MG1655
     top_sites = ["TACTGTATAAATAAACAGTA", "TACTGTATATAAAAACAGTA", "TACTGTATATAAAAACAGTA", "AACTGTATATAAATACAGTT", "TACTGTATATAAAACCAGTT", "TACTGGATAAAAAAACAGTT", "TACTGTATAAAATCACAGTT", "AACTGGATAATCATACAGTA", "CACTGTATAAATAAACAGCT", "TACTGTACATCCATACAGTA", "ACCTGTATAAATAACCAGTA", "TACTGTATGAGCATACAGTA", "TACTGGATATTTAAACAGGT", "AACTGTATATACACCCAGGG", "TGCTGTATATACTCACAGCA", "AACTGGATAAAATTACAGGG", "TACTGTATATTCATTCAGGT", "TACTGTACACAATAACAGTA", "AGCTGAATAAATATACAGCA", "ATCTGTATATATACCCAGCT", "CACTGGATAGATAACCAGCA", "TACTGCATATACAACCAGAA", "CACTGTATACTTTACCAGTG", "AACTGTCGATACGTACAGTA", "TGCTGTACAAACGTCCAGTT", "CGCTGGATATCTATCCAGCA", "TGCTGTTTATTAAACCAGAA", "CATTGTTTATAAAAACAGCA", "TACTGGAGACAAATACAGCT", "ACCTGTATATATCATCAGTA", "TACTGTATAAACAGCCAATA", "TACTGTTTATCTTCCCAGCG", "GACTGTATAAAACCACAGCC", "TATTGTATATATTCACATTA", "AAGTGTATTTACACACAGCG", "AACTGGATAATCATACCGTT", "TGCTGTATGGATTAACAGGA", "TCCTGTATGAAAAACCATTA", "GCCTGTCTGAACAAACAGTA", "AAGTGTATATATATCCATCG", "AATTGTTTAAAAAACCAGAA", "TATTGTATTTATAAACATTA", "AACTGATTAAAAACCCAGCG", "GAGTGTATATAAAGCCAGAA", "TTCTGGATAAGCATCCAGAA", "ACCTGAATATTCAAACAGCG", "TACTGTCTACCAAAACAGAG", "TCCTGTATAAATTAACCGTT", "TAATGAATATAAAACCAGGA", "AACTGTAAATAATTACATGA", "TACTGAATAAAAAAGCAGAA", "TGCTGTACAATCAGCCAGCA", "TGCTGGATTTACGACCAGAA", "TACTGTTTATAAACCGAGCG", "TCTTGTATATCCAACCAGTT", "CACTGTATTAAAAACCATTC", "AACTGTATTACCTTCCAGCC", "TACTGTTTCCATTTACAGCC", "TAGTGGATGTAAAAACATTT", "CACTGTCTATACTTACATGT", "TACTGTTTGTGCAAATAGTA", "AACTGGTTATCAACCCAGAC", "CTCTGTATCTAATTACAGGT", "CACTGAATGCTAAAACAGCA", "TGCTGGATGTGAAACCAGCG", "TGCTGATTAAAAAACCAGCG", "AACTGGATATCTATCCGGAA", "CACTGTCTGATACAACAGTT", "AATTGTTAATATATCCAGAA", "AACTTTATGTACAGCCAGTG", "AACTGGTTATTCCACCAGAA", "GAATGGATAAAAAAACAGCC", "AGCTGTATAAAAATCCTGAG", "TCCTGGCTATTTTGCCAGTA", "AGCTGGCTATCTGAACAGTT", "CACTGGATATTCCTTCAGGT", "GGCTGGATAAAGAACCAGAA", "AACTGAATAAAAACAAAGGA", "TGCTGTACATCAGCACAGAT", "CAGTGGATTAACTTCCAGTT", "TACTGGATACAAAAACGGAT", "AACTATATAAATAAACATAA", "TGCTGCATGAAGAAACAGTA", "GTCTGAATGAATACCCAGTA", "TACTTTATTTACTCCCAGTG", "TACTGGAAACTAACACAGGC", "TACTGGATATCAAACCTGAA", "TACTGTCGGAAAAATCAGTG", "AACTGTATATGTCGCCAGGC", "TACTCTTCATTAAAACAGTG", "GACTGGCTTAATACACAGCC", "CAGTGTAAGAATAGACAGTG", "CGCTGGATGAGCGTACAGCA", "AACGGGATAATAAAACAGCC", "TACCGTTTGTATTTCCAGCT", "CTCTGGACATTAAACCAGGA", "TAGTTTATATAAATTCAGTC", "TACTGTATATTCCTCAAGCG", "AACTGGATATATAAATAATG", "AACGGTTTAAACACCCAGCG", "GCCTGGTTAAATGACCAGCA", "TACTGTTTAGCCAGCCAGTC", "TGCTGAACATTCTTCCAGCA", "TACTGGAAATAAGATCAGCC", "AACTGGATCTTAAAAAAGTA", "GGCTGGACAATTTTACAGCT", "AACTGTCTCTTATGACAGTT", "AACTGGATACAGAAACAATA", "TAGTGTTCAGTTTTACAGTA", "TAGTGTTTGTTCATCCATTA", "CAGTGTTGAAAAGTCCAGTA", "ATCTGGCTGAAATTACAGAA", "GATTGAATGAATATACAGGG", "CACTGGTTTTCCACCCAGCA", "AACTGGTTGAAAAACCATCA", "AACTGGTTTAACTCCCAGGG", "AGCTGGATAAACAAAAAGCG", "AACTGGATAAATTACCGGAT", "AACTGGATTTAAATCCTGGT", "AACTGTATTTACAATCATCT", "TACTCTCTGTTCATCCAGCA", "TACTCTATGCAATAACAGAA", "TGCTGAATGCATTAACAGCG", "CACTGGTTATCTTTACCGTA", "TGGTGGATATTTTTTCAGGA", "AACTGGATATCAATCCGGAT", "AAGTGTAAAATTCTACAGAA", "AACCGGACATAAAGCCAGTA", "CACTGTATAAAAATCCTATA", "AACTCTATATTACCCCAGTT", "ACCAGAATAAACATCCAGTA", "TACTGGATGCATTACCGGTA", "CACTCTTTATAAAACCAGGC", "CAGTGAAAATAAAAACAGGA", "AACGGTTTATCTAGCCAGTA", "TCATGTATGATCATACAGAC", "TGCTGAATATATAAAAAGAG", "ACCTGGATGTCACCACAGTT", "TACTAAATGAAAAAACAGCG", "AACTGGATGAACAACCGGCG", "TTCTTTATACATATCCAGCG", "AAGTGTTTGCTAACACAGCA", "AAGTGTAAAAAATCCCAGCG", "AACTGGATAAAGACACCGCT", "TGCTGTATGGTAAATCAGAA", "AACTGTATGATTTAAAAGAT", "TACGGTATAAAAAGACCGTA", "TGCTGGATATTATCCCATCA", "TACTGTCTGAAGAAGCAGTG", "AACTGAATAAATACCCCGGT", "TGCTGTATGAGTAACCGGTA", "CACTGGAAAAATGCGCAGTA", "AACTGGATAGCTATGCAGAA", "AATTGTAAAAAACAACAGCA", "AACTGTTTATCAACACCGCT", "ACCTGTACCTTAAACCAGGA", "TACTTTATAGTTTCCCAGTT", "ATCTGCATAAAGAACCAGTA", "CCCTCTTTATATTTCCAGTG", "TACTGTTTATTAATGTAGCA", "ATGTGAATGAATATCCAGTT", "AACTGGTTAAAATTAGAGAT", "TACTGTAAGAAAAACCCGCA", "ACCTGGAGAAAGAAACAGCG", "CACTGTTTACCCTGACAGTC", "AACTGGCTCATAACCCAGAA"]
-    top_seqs = [nt2int(seq) for seq in top_sites][0:3]
+    top_seqs = [nt2int(seq) for seq in top_sites]
+    top_seqs = top_seqs[0:3] # Truncate to first three for the sake of less output spam
     
     # Load genome (validated)
     genome, __ = load_scaffolds(genome_filename)
+    _genome, __ = metagenomics.load_scaffolds(genome_filename)
+    print "Genomes loaded equally:", np.array_equal(genome, _genome)
+    print
 
-    # Find the site (validated)
-    found = []
+    # Ensure the sites are in the genome (validated)
+    print "Finding the sites in the genome:"
+    positions = []
     sites = []
     strands = []
     for seq in top_seqs:
         matches = np.where(np.all(sliding_window(genome, seq.size) == seq, axis=1))
         matches_r = np.where(np.all(sliding_window(genome, seq.size) == wc(seq), axis=1))
-
+        
+        # forward strand
         for match in matches:
-            if match.size > 0 and match[0] not in found:
-                print int2nt(genome[match[0]:match[0] + 20]), "->", match[0]
-                found.append(match[0])
-                sites.append(genome[match[0]:match[0] + 20])
-                strands.append(0)
+            if match.size > 0 and match[0] not in positions:
+                pos = match[0]
+                seq = genome[pos:pos + 20]
+                print int2nt(seq), "->", match[0] 
+                positions.append(pos)
+                sites.append(seq)
+                strands.append(0) # forward
+        
+        # reverse strand
         for match in matches_r:
-            if match.size > 0 and match[0] not in found:
-                print int2nt(wc(genome[match[0]:match[0] + 20])), "<-", match[0]
-                found.append(match[0])
-                sites.append(wc(genome[match[0]:match[0] + 20]))
-                strands.append(1)
-
+            if match.size > 0 and match[0] not in positions:
+                pos = match[0]
+                seq = wc(genome[match[0]:match[0] + 20])
+                print int2nt(seq), "<-", match[0]
+                positions.append(pos)
+                sites.append(seq)
+                strands.append(1) # reverse
+    print
+    
     # Load PSSM (validated)
     genome_frequencies = np.bincount(genome).astype(np.float) / genome.size
     _pssm = create_pssm(motif_filename, genome_frequencies=genome_frequencies)
+    _pssm2 = gpu_pssm.create_pssm(motif_filename, genome_frequencies=genome_frequencies)
+    print "PSSMs created equally:", np.array_equal(_pssm, _pssm2)
+    print
     
-    # Score sites
+    # Score sites (validated!!)
+    print "Scoring sites:"
     for n, site in enumerate(sites):
-        print "True:", score_site(site, _pssm), int2nt(site), strands[n], found[n]
-        print "CPU: ", cpu_score_site(site, _pssm), int2nt(site), strands[n], found[n]
-        print "GPU: ", gpu_score_site(site, _pssm), int2nt(site), strands[n], found[n]
+        print "True:", score_site(site, _pssm), int2nt(site), strands[n], positions[n]
+        print "CPU: ", cpu_score_site(site, _pssm), int2nt(site), strands[n], positions[n]
+        print "GPU: ", gpu_score_site(site, _pssm), int2nt(site), strands[n], positions[n]
         print
 
     # motif_seqs = load_fasta(motif_filename)
@@ -82,13 +99,13 @@ def score_site(site, pssm):
 
 
 def gpu_score_site(site, pssm):
-    scores = gpu_pssm.score_sequence(site, pssm)
-    return scores[0][0]
+    scores = gpu_pssm.score_sequence(site, pssm, keep_strands = False)
+    return scores[0]
 
 
 def cpu_score_site(site, pssm):
-    scores = gpu_pssm.score_sequence_with_cpu(site, pssm)
-    return scores[0][0]
+    scores = gpu_pssm.score_sequence_with_cpu(site, pssm, keep_strands = False)
+    return scores[0]
 
 
 def sliding_window(a, size):
@@ -105,25 +122,6 @@ def load_fasta(filename):
 
 
 def load_scaffolds(filename):
-    """
-    Loads a file into memory from a FASTA-formatted sequence file.
-    
-    Typically, genomic sequence data is stored in "scaffolds", i.e.:
-        >scaffold1_1_MH0012
-        TACTCTGGAAGGAGATATT...
-    The scaffold is a reconstruction of one or more contigs (contiguous reads).
-    
-    Args:
-        filename: The path to the file containing the sequence data.
-    
-    Returns:
-        sequence: The entire patient file loaded into one array. This is a
-            uint8 NumPy array where A = 0, C = 1, G = 2, T = 3.
-        scaffolds: Since all the scaffolds are joined into one array, this is
-            a list of the indices where each scaffold begins. This can be used
-            to keep track of which segments of the sequence are contiguous.
-        
-    """
     scaffolds = []
     
     with open(filename, "r+") as f:
@@ -165,32 +163,6 @@ def load_scaffolds(filename):
 
 
 def create_pssm(motif_filename, genome_frequencies = [0.25] * 4, epsilon = 1e-50):
-    """
-    The Position-Specific Scoring Matrix (PSSM) reflects the information
-    content represented by the occurrence of each base at each position of a
-    sequence of n length in the genome. See:
-        http://en.wikipedia.org/wiki/Position-Specific_Scoring_Matrix
-    
-    This function will generate a PSSM that can be used with the score_sequences()
-    function in this script.
-    
-    Args:
-        motif_filename: A file containing the sequences that make up the motif.
-            Typically this either a FASTA or plain-text file with one sequence
-            per line, where each sequence is a binding site for the DNA-binding
-            protein. These sequences must be aligned and of the same length.
-        genome_frequencies: The background frequencies of each base in the
-            genome. This is the nucleotide composition of the genome in the
-            order: A, C, G, T
-        epsilon: A small number added to prevent log(0) situations where there
-            is an infinitely great negative log-likelihood of a base occuring
-            at a position.
-        
-    Returns:
-        pssm: A float64 array of length w * 4, where w is the width of the
-            motif.
-    """    
-    
     # Initialize language and counts
     bases = "ACGT"
     counts = np.array([])
